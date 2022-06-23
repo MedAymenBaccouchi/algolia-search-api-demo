@@ -1,0 +1,45 @@
+# This is a basic workflow to help you get started with Actions
+name: CI - Deploy
+
+# Controls when the action will run. 
+on:
+  push:
+    paths:
+      - 'chart/**'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains multiple jobs
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    env:
+      GKE_LOCATION: your-gke-location
+      GKE_CLUSTER: your-gke-cluster-name
+      GKE_NAMESPACE: your-gke-namepsace
+      CHART_NAME: algolia-search-api
+      CHART_FOLDER: chart 
+        
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+
+      # Setup gcloud CLI
+      - uses: google-github-actions/setup-gcloud@v0.6.0
+        with:
+          service_account_key: ${{ secrets.GKE_SA }}
+          project_id: ${{ secrets.GKE_PROJECT_ID }}
+
+      # Get the GKE credentials so we can deploy to the cluster
+      - uses: google-github-actions/get-gke-credentials@v0.7.0
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_LOCATION }}
+          credentials: ${{ secrets.GKE_SA }}
+
+      # Deploy the chart, and wait for all Pods to be running
+      - name: Helm upgrade
+        working-directory: ${{ env.CHART_FOLDER }}
+        run: helm upgrade -i --wait --timeout 2m0s mock ./${{ env.CHART_NAME }}/ -n ${{ env.GKE_NAMESPACE }}

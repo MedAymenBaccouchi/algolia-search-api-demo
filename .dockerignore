@@ -1,0 +1,11 @@
+chart/
+.github/
+.gitignore
+.travis.yml
+dataset_import/
+README.md
+.nvmrc
+screenshots/
+docs/
+Dockerfile
+LICENSE
