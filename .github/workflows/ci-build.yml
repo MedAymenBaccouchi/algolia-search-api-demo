@@ -1,0 +1,78 @@
+# This is a basic workflow to help you get started with Actions
+name: CI - Build
+
+# Controls when the action will run. 
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'chart/**'
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains multiple jobs
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    env:
+      DOCKER_REPO: your-docker-repo
+      CHART_NAME: algolia-search-api
+      CHART_FOLDER: chart 
+      DEFAULT_BRANCH: main
+      GITHUB_USERNAME: your-github-username
+      GITHUB_EMAIL: your-github-email
+        
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+
+
+      # Setup Docker Hub authentication
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Create a semantic release
+      - name: semantic release
+        id: semrel
+        uses: go-semantic-release/action@v1
+        with:
+          force-bump-patch-version: true
+          allow-initial-development-versions: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build the container image based on the semantic release tag
+      - name: Build container image
+        run: |-
+          docker build \
+          -t ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPO }}:${{ steps.semrel.outputs.version }} .
+
+      # Push the previously built image to Docker Hub
+      - name: Push container image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_REPO }}:${{ steps.semrel.outputs.version }}
+
+      # Update chart's appVersion to deploy the the previously built image
+      - name: Update chart appVersion
+        working-directory: ${{ env.CHART_FOLDER }}
+        run: appVersion=${{ steps.semrel.outputs.version }} yq e '.appVersion = env(appVersion)' -i ${{ env.CHART_NAME }}/Chart.yaml
+
+      # Commit the chart appVersion modification
+      - name: Commit files
+        run: |
+          git config --global user.name ${{ env.GITHUB_USERNAME }}
+          git config --global user.email ${{ env.GITHUB_EMAIL }}
+          git commit -m "Release ${{ steps.semrel.outputs.version }}" -a
+
+      # Push chart changes to trigger the deployment
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.PAT }}
+          branch: ${{ env.DEFAULT_BRANCH }}
