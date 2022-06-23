@@ -71,13 +71,18 @@ For this Demo, we considered the merge on default branch use case.
 
 We created a CI workflow that:
 1. On merge to the main branch, we create a semantic version and publish a new release
+
 2. Build a new container image based on the recent release
+
 3. Push the new container image to Docker Hub
+
 4. Update the Chart appVersion
+
 5. Commit and Push to the main branch
 
 Then, the CD workflow:
 1. Triggered if a change happened on the Chart folder
+
 2. Authenticate to GKE cluster
 
 3. Install the Chart, with --wait to make sure all new Pods and running.
