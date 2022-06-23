@@ -14,6 +14,7 @@
 This is a sample project of an [Algolia](http://www.algolia.com) Instant-Search result page on an e-commerce website. Algolia is a Search API that provides a hosted full-text, numerical and faceted search.
 
 [Installation](#installation) •
+[Result](#result) •
 [Continuous Improvement](#continuos-improvement)
 
 
@@ -136,6 +137,21 @@ Keep in mind:
 ### Helm level
 
 1. Set the `--wait` flag, along with `testing-connection` `"helm.sh/hook": test-success` to only consider the release as successfully deployed when all new Pods are running.
+
+# Result
+
+- Build workflow successfuly finished
+![Build](/docs/images/build-workflow.png)
+
+- Deploy workflow successfuly finished
+![Deploy](/docs/images/deploy-workflow.png)
+
+- Up and Running Pods
+![Running Pods](/docs/images/pods.png)
+
+- Ingress, with tls
+![Ingress](/docs/images/ingress-tls.png)
+
 
 # Continuous Improvement
 
