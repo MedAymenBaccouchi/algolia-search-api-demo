@@ -15,7 +15,7 @@ This is a sample project of an [Algolia](http://www.algolia.com) Instant-Search 
 
 [Installation](#installation) •
 [Result](#result) •
-[Continuous Improvement](#continuos-improvement)
+[Continuous Improvement](#continuous-improvement)
 
 
 </div>
